@@ -1,9 +1,13 @@
 const express = require('express');
 const bcryptjs = require('bcryptjs');
+const path = require('path');
 const app = express();
 
 const PostModel = require('./models/post');
 const UserModel = require('./models/user');
+
+app.set('view engine','ejs');
+app.set('views',path.resolve(__dirname,'./views'));
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
@@ -115,6 +119,31 @@ app.post('/api/login',async (req,res)=>{
         })
     }
   
+})
+
+//文章列表
+app.get('/posts',async (req,res)=>{
+    let pageNum = parseInt(req.query.pageNum)||1;
+    let pageSize = parseInt(req.query.pageSize)||3;
+
+
+    const posts = await PostModel.find()
+    .skip((pageNum-1)*pageSize)
+    .limit(pageSize)
+
+    const count = await PostModel.find().countDocuments();
+    const totalPages = Math.ceil(count/pageSize)
+    res.render('post/index',{posts,totalPages,pageNum})
+})
+
+//文章新增
+app.get('/posts/create',async (req,res)=>{
+    res.render('post/create')
+})
+
+//文章详情
+app.get('/posts/:id',async (req,res)=>{
+    res.render('post/show')
 })
 
 app.listen(8080);
