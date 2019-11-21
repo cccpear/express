@@ -25,4 +25,28 @@ app.post('/api/posts',async (req,res)=>{
 
 })
 
+app.get('/api/posts',async (req,res)=>{
+    let pageNum = parseInt(req.query.pageNum)||1
+    let pageSize = parseInt(req.query.pageSize)||3
+    let title = req.query.title;
+
+
+    const posts = await PostModel.find({title:new RegExp(title)})
+    .skip((pageNum-1)*pageSize)
+    .limit(pageSize)
+
+    const count = await PostModel.find({
+        title:new RegExp(title)
+    }).countDocuments()
+
+    res.send({
+        code:0,
+        msg:'ok',
+        data:{
+            list:posts,
+            count
+        }
+    })
+})
+
 app.listen(8080);
